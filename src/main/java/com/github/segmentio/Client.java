@@ -97,8 +97,7 @@ public class Client {
 		this.statistics = new AnalyticsStatistics();
 		
 		this.requester = new BlockingRequester(this);
-		this.flusher = new Flusher(this, factory, requester);
-		this.flusher.start();
+		this.flusher = new Flusher();
 	}
 	
 	private IBatchFactory factory = new IBatchFactory() {
@@ -526,14 +525,12 @@ public class Client {
 	 * Blocks until all messages in the queue are flushed.
 	 */
 	public void flush() {
-		this.flusher.flush();
 	}
 
 	/**
 	 * Closes the queue and the threads associated with flushing the queue
 	 */
 	public void close() {
-		this.flusher.close();
 		this.requester.close();
 	}
 
@@ -555,6 +552,14 @@ public class Client {
 
 	public AnalyticsStatistics getStatistics() {
 		return statistics;
+	}
+
+	public IBatchFactory getFactory() {
+		return factory;
+	}
+
+	public BlockingRequester getRequester() {
+		return requester;
 	}
 
 }

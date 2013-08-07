@@ -9,9 +9,12 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.conn.SchemeRegistryFactory;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +45,10 @@ public class BlockingRequester implements IRequester {
 
 		final HttpParams httpParams = new BasicHttpParams();
 	    HttpConnectionParams.setConnectionTimeout(httpParams, client.getOptions().getTimeout());
-		this.httpClient = new DefaultHttpClient(httpParams);
+		PoolingClientConnectionManager cxMgr = new PoolingClientConnectionManager(SchemeRegistryFactory.createDefault());
+		cxMgr.setMaxTotal(100);
+		cxMgr.setDefaultMaxPerRoute(20);
+		this.httpClient = new DefaultHttpClient(cxMgr, httpParams);
 		
 		this.gson = new GsonBuilder().registerTypeAdapter(DateTime.class,
 				new DateTimeTypeConverter()).create();
@@ -62,18 +68,17 @@ public class BlockingRequester implements IRequester {
 					+ "/v1/import");
 			post.addHeader("Content-Type", "application/json; charset=utf-8");
 			post.setEntity(new ByteArrayEntity(json.getBytes("UTF-8")));
-			
 			HttpResponse response = httpClient.execute(post);
-
-			BufferedReader rd = new BufferedReader(new InputStreamReader(
-					response.getEntity().getContent()));
+			InputStreamReader reader = new InputStreamReader(response.getEntity().getContent());
+			BufferedReader rd = new BufferedReader(reader);
 			
 			StringBuilder responseBuilder = new StringBuilder();
 			String line;
 			while ((line = rd.readLine()) != null) {
 				responseBuilder.append(line);
 			}
-			
+			rd.close();
+			EntityUtils.consume(response.getEntity());
 			String responseBody = responseBuilder.toString();
 			int statusCode = response.getStatusLine().getStatusCode();
 			

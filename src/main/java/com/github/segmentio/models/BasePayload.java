@@ -1,12 +1,14 @@
 package com.github.segmentio.models;
 
+import java.io.Serializable;
+
 import org.joda.time.DateTime;
 
 /**
  * The base model for for Track / Identify payload
  *
  */
-public class BasePayload {
+public class BasePayload implements Serializable {
 
 	private String userId;
 	private Context context;
