@@ -1,9 +1,11 @@
-analytics-java
+analytics-java-gae
 ==============
 
-analytics-java is a java client for [Segment.io](https://segment.io)
+analytics-java-gae is a java Google AppEngine client for [Segment.io](https://segment.io)
 
 ## Documentation
+
+You should add "analytics" task queue in queue.xml in order to use this client.
 
 Documentation is available at [https://segment.io/libraries/java](https://segment.io/libraries/java).
 
